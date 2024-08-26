@@ -1,0 +1,70 @@
+import heapq
+
+class Graph:
+    def __init__(self):
+        self.edges = {}
+        self.weights = {}
+
+    def add_edge(self, from_node, to_node, weight):
+        # Create graph structure
+        if from_node not in self.edges:
+            self.edges[from_node] = []
+        self.edges[from_node].append(to_node)
+        self.weights[(from_node, to_node)] = weight
+
+def dijkstra(graph, start):
+    # Priority queue to select the next node with the smallest weight
+    priority_queue = [(0, start)]
+    shortest_paths = {start: (None, 0)}
+    visited = set()
+
+    while priority_queue:
+        # Get the node with the smallest weight
+        current_weight, current_node = heapq.heappop(priority_queue)
+
+        # Skip nodes that have already been visited
+        if current_node in visited:
+            continue
+
+        visited.add(current_node)
+
+        for next_node in graph.edges.get(current_node, []):
+            weight = graph.weights[(current_node, next_node)] + current_weight
+            if next_node not in shortest_paths or weight < shortest_paths[next_node][1]:
+                shortest_paths[next_node] = (current_node, weight)
+                heapq.heappush(priority_queue, (weight, next_node))
+
+    return shortest_paths
+
+def calculate_route(graph, origin, destination):
+    # Generate the shortest path from origin to destination
+    shortest_paths = dijkstra(graph, origin)
+
+    # If the destination is not reachable, return an empty path
+    if destination not in shortest_paths:
+        return []
+
+    path = []
+    current_node = destination
+
+    while current_node is not None:
+        path.append(current_node)
+        current_node = shortest_paths[current_node][0]
+
+    # Reverse the path to get the correct order
+    path.reverse()
+    return path
+
+# Example graph for testing
+graph = Graph()
+graph.add_edge('A', 'B', 1)
+graph.add_edge('B', 'C', 2)
+graph.add_edge('A', 'C', 4)
+graph.add_edge('C', 'D', 1)
+graph.add_edge('B', 'D', 5)
+
+origin = 'A'
+destination = 'D'
+route = calculate_route(graph, origin, destination)
+
+print(f"Optimized route from {origin} to {destination}: {' -> '.join(route)}")
